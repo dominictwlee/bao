@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
@@ -32,11 +31,6 @@ var (
 		Use:   "bao",
 		Short: "A batteries included CLI tool to help you build javascript packages",
 		Long:  `A CLI tool to build javascript packages quickly with minimal config requirements. Powered by esbuild`,
-		// Uncomment the following line if your bare application
-		// has an action associated with it:
-		//Run: func(cmd *cobra.Command, args []string) {
-		//	fmt.Println(args)
-		//},
 	}
 )
 
@@ -55,7 +49,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.bao.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ${ProjectRootDir}/.bao.yaml)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -64,15 +58,15 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
+		// Find working directory.
+		wd, err := os.Getwd()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		// Search config in home directory with name ".bao" (without extension).
-		viper.AddConfigPath(home)
+		// Search config in working directory with name ".bao" (without extension).
+		viper.AddConfigPath(wd + "/exampleapp")
 		viper.SetConfigName(".bao")
 	}
 
