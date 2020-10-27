@@ -63,14 +63,54 @@ type PackageJSON struct {
 	License string
 	Main    string
 	Module  string
-	Typings string
+	Typings string `json:"typings,omitempty"`
 	Files   []string
 	Engines struct {
 		Node string
 	}
 	Scripts struct {
-		Start string
 		Build string
+	}
+}
+
+func (pkgjson *PackageJSON) Apply(opts ...Option) {
+	for _, opt := range opts {
+		if opt != nil {
+			opt(pkgjson)
+		}
+	}
+}
+
+type Option func(pkgjson *PackageJSON)
+
+func New(opts ...Option) PackageJSON {
+	pkgjson := PackageJSON{
+		Name:    "",
+		Author:  "",
+		Version: "0.1.0",
+		License: "MIT",
+		Main:    "dist/index.js",
+		Module:  "dist/index.esm.js",
+		Files:   []string{"dist", "src"},
+		Engines: struct {
+			Node string
+		}{
+			Node: ">=10",
+		},
+		Scripts: struct {
+			Build string
+		}{
+			Build: "bao build",
+		},
+	}
+	pkgjson.Apply(opts...)
+	return pkgjson
+}
+
+func NamePkg(name string, author string) Option {
+	return func(pkgjson *PackageJSON) {
+		pkgjson.Name = name
+		pkgjson.Author = author
 	}
 }
 
