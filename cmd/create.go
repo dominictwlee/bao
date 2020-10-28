@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"github.com/dominictwlee/bao/internal/pkgjson"
 	"github.com/spf13/cobra"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -28,18 +32,85 @@ var createCmd = &cobra.Command{
 	Short: "Create a new javascript package",
 	Long:  "Create a new javascript package with all the necessary configs and scaffolding",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(args)
+		/**
+		1. mk project dir
+		2. copy template files
+		3. write pkg json according to template type
+		4. install dependencies with either yarn or npm
+		5. run build
+		*/
+		projectName := args[0]
+		//err := os.Mkdir(projectName, 0775)
+		//if err != nil {
+		//	log.Fatalln(err)
+		//}
+
+		projectPath, err := filepath.Abs(projectName)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Println(projectPath)
+
+		execFilePath, err := os.Executable()
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		modulePath := resolveModulePath(execFilePath)
+		templatePath := filepath.Join(modulePath, "templates", "basic")
+		fmt.Println(templatePath)
+
 		if tmpl != "" {
 			if !isValidTmpl(tmpl) {
-				fmt.Printf("%s is not a valid template. Please choose from the following: %v\n", tmpl, allowedTmpls)
-				return
+				log.Fatalf("%s is not a valid template. Please choose from the following: %v\n", tmpl, allowedTmpls)
 			}
 
 			// bootstrap project dir according to specified template
 		} else {
-			// bootstrap basic project folder
+			// bootstrap basic project folder0664
 			fmt.Println("Basic")
 		}
 	},
+}
+
+func copyFile(src, dest string) (err error) {
+	srcStat, err := os.Stat(src)
+	if err != nil {
+		return
+	}
+
+	if !srcStat.Mode().IsRegular() {
+		fmt.Errorf("%s is not a regular file", src)
+	}
+
+	in, err := os.Open(src)
+	if err != nil {
+		return
+	}
+	defer in.Close()
+
+	out, err := os.Create(dest)
+	if err != nil {
+		return
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return
+	}
+
+	if err = out.Sync(); err != nil {
+		return
+	}
+
+	return
+}
+
+func resolveModulePath(execFilePath string) string {
+	modulePathParts := strings.Split(filepath.Dir(execFilePath), "/")
+	return strings.Join(modulePathParts[0:len(modulePathParts)-1], "/")
 }
 
 func init() {

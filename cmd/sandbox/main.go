@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
-	"net/url"
-	"regexp"
+	"os"
 )
 
 func main() {
-	pkgRe := regexp.MustCompile("^(?:@([^/]+?)[/])?([^/]+?)$")
-	match := pkgRe.FindStringSubmatch("@myor?g/mypackage")
-	fmt.Println(url.PathEscape(match[1]))
+	srcStat, err := os.Stat("dumb.txt")
+	if err != nil {
+		return
+	}
+
+	fmt.Println(srcStat.Mode().IsRegular())
 
 }
