@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dominictwlee/bao/internal/pkgjson"
 	"github.com/spf13/cobra"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -72,40 +71,6 @@ var createCmd = &cobra.Command{
 			fmt.Println("Basic")
 		}
 	},
-}
-
-func copyFile(src, dest string) (err error) {
-	srcStat, err := os.Stat(src)
-	if err != nil {
-		return
-	}
-
-	if !srcStat.Mode().IsRegular() {
-		fmt.Errorf("%s is not a regular file", src)
-	}
-
-	in, err := os.Open(src)
-	if err != nil {
-		return
-	}
-	defer in.Close()
-
-	out, err := os.Create(dest)
-	if err != nil {
-		return
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, in)
-	if err != nil {
-		return
-	}
-
-	if err = out.Sync(); err != nil {
-		return
-	}
-
-	return
 }
 
 func resolveModulePath(execFilePath string) string {
