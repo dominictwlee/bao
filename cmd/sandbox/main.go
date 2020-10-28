@@ -1,16 +1,10 @@
 package main
 
-import (
-	"fmt"
-	"os"
-)
+import "github.com/dominictwlee/bao/internal/fs"
 
 func main() {
-	srcStat, err := os.Stat("dumb.txt")
+	err := fs.CopyDir("../../templates", "templates")
 	if err != nil {
-		return
+		panic(err)
 	}
-
-	fmt.Println(srcStat.Mode().IsRegular())
-
 }
