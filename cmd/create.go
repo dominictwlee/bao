@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dominictwlee/bao/internal/fs"
+	"github.com/dominictwlee/bao/internal/path"
 	"github.com/dominictwlee/bao/internal/pkgjson"
 	"github.com/spf13/cobra"
 	"io/ioutil"
@@ -53,12 +54,11 @@ var createCmd = &cobra.Command{
 		}
 		fmt.Println(projectPath)
 
-		execFilePath, err := os.Executable()
+		modulePath, err := path.ResolveModulePath()
 		if err != nil {
 			log.Fatalln(err)
 		}
 
-		modulePath := resolveModulePath(execFilePath)
 		var templatePath string
 
 		if tmpl != "" {
@@ -98,11 +98,6 @@ var createCmd = &cobra.Command{
 			}
 		}
 	},
-}
-
-func resolveModulePath(execFilePath string) string {
-	modulePathParts := strings.Split(filepath.Dir(execFilePath), "/")
-	return strings.Join(modulePathParts[0:len(modulePathParts)-1], "/")
 }
 
 func init() {
