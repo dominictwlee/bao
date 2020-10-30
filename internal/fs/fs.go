@@ -25,10 +25,6 @@ func CopyDir(srcdir, destdir string) (err error) {
 	for _, entry := range entries {
 		srcPath := filepath.Join(srcdir, entry.Name())
 		destPath := filepath.Join(destdir, entry.Name())
-
-		fmt.Println(srcPath)
-		fmt.Println(destPath)
-
 		if entry.IsDir() {
 			if err = CopyDir(srcPath, destPath); err != nil {
 				return

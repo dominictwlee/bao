@@ -3,17 +3,20 @@ package pkgjson
 import (
 	"errors"
 	"net/url"
+	"os/exec"
 	"regexp"
 	"strings"
 )
 
 const (
 	invalidLeadingCharRe = "^\\.|_"
+	DevDepFlag           = "--dev"
 )
 
 var (
 	scopedPkgRe = regexp.MustCompile("^(?:@([^/]+?)[/])?([^/]+?)$")
-	BaseDevDeps = [...]string{"bao"}
+	BaseDeps    = []string{"react"}
+	BaseDevDeps = []string{"eslint, prettier"}
 	builtins    = [...]string{
 		"assert",
 		"buffer",
@@ -112,6 +115,20 @@ func NamePkg(name string, author string) Option {
 		pkgjson.Name = name
 		pkgjson.Author = author
 	}
+}
+
+func InstallDeps(deps []string, opt ...string) error {
+	//var out bytes.Buffer
+	//var stderr bytes.Buffer
+
+	addCmd := []string{"add"}
+	addCmd = append(addCmd, deps...)
+
+	if len(opt) > 0 {
+		addCmd = append(addCmd, opt[0])
+	}
+
+	return exec.Command("yarn", addCmd...).Run()
 }
 
 func IsValidName(name string) (bool, error) {

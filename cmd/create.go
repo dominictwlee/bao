@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/dominictwlee/bao/internal/fs"
 	"github.com/dominictwlee/bao/internal/pkgjson"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -31,7 +34,6 @@ var createCmd = &cobra.Command{
 	Short: "Create a new javascript package",
 	Long:  "Create a new javascript package with all the necessary configs and scaffolding",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(args)
 		/**
 		1. mk project dir
 		2. copy template files
@@ -40,10 +42,10 @@ var createCmd = &cobra.Command{
 		5. run build
 		*/
 		projectName := args[0]
-		//err := os.Mkdir(projectName, 0775)
-		//if err != nil {
-		//	log.Fatalln(err)
-		//}
+		err := os.Mkdir(projectName, 0775)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
 		projectPath, err := filepath.Abs(projectName)
 		if err != nil {
@@ -57,18 +59,43 @@ var createCmd = &cobra.Command{
 		}
 
 		modulePath := resolveModulePath(execFilePath)
-		templatePath := filepath.Join(modulePath, "templates", "basic")
-		fmt.Println(templatePath)
+		var templatePath string
 
 		if tmpl != "" {
 			if !isValidTmpl(tmpl) {
 				log.Fatalf("%s is not a valid template. Please choose from the following: %v\n", tmpl, allowedTmpls)
 			}
-
-			// bootstrap project dir according to specified template
+			templatePath = filepath.Join(modulePath, "templates", strings.TrimSpace(tmpl))
 		} else {
 			// bootstrap basic project folder0664
 			fmt.Println("Basic")
+			templatePath = filepath.Join(modulePath, "templates", "basic")
+
+			// Copy template files
+			if err := fs.CopyDir(templatePath, projectPath); err != nil {
+				log.Fatalln(err)
+			}
+
+			// write pkg json
+			pjson := pkgjson.New(pkgjson.NamePkg(projectName, "Dommy Montana"))
+			json, err := json.Marshal(pjson)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			if err := ioutil.WriteFile(filepath.Join(projectPath, "package.json"), json, 0664); err != nil {
+				log.Fatalln(err)
+			}
+
+			// yarn/npm install dependencies
+			if err := os.Chdir(projectPath); err != nil {
+				log.Fatalln(err)
+			}
+			if err := pkgjson.InstallDeps(pkgjson.BaseDeps); err != nil {
+				log.Fatalln(err)
+			}
+			if err := pkgjson.InstallDeps(pkgjson.BaseDevDeps, pkgjson.DevDepFlag); err != nil {
+				log.Fatalln(err)
+			}
 		}
 	},
 }
