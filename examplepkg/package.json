@@ -1,0 +1,5 @@
+{
+  "author": "Dommy Montana",
+  "name": "examplepkg",
+  "main": "dist/index.js"
+}
