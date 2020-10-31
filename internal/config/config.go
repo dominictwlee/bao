@@ -1,6 +1,10 @@
 package config
 
-import "github.com/evanw/esbuild/pkg/api"
+import (
+	"errors"
+	"fmt"
+	"github.com/evanw/esbuild/pkg/api"
+)
 
 var (
 	BuildTargets = map[string]api.Target{
@@ -13,6 +17,7 @@ var (
 		"es2020": api.ES2020,
 		"esnext": api.ESNext,
 	}
+	TargetNames = getTargetNames(BuildTargets)
 
 	BuildEngines = map[string]api.EngineName{
 		"chrome": api.EngineChrome,
@@ -30,9 +35,120 @@ var (
 		"ios":  api.EngineIOS,
 	}
 
+	EngineNames = getEngineNames(BuildEngines)
+
 	BuildFormats = map[string]api.Format{
 		"iife": api.FormatIIFE,
 		"cjs":  api.FormatCommonJS,
 		"esm":  api.FormatESModule,
 	}
+
+	SourceMapTypes = map[string]api.SourceMap{
+		"linked": api.SourceMapLinked,
+		"inline": api.SourceMapInline,
+	}
+
+	FormatNames = getFormatNames(BuildFormats)
 )
+
+func getTargetNames(m map[string]api.Target) []string {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func getFormatNames(m map[string]api.Format) []string {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func getEngineNames(m map[string]api.EngineName) []string {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+type BuildOptions struct {
+	Entry     string
+	Target    string
+	Engines   map[string]string
+	Bundle    *bool
+	Define    map[string]interface{}
+	Format    string
+	Minify    *bool
+	SourceMap string
+}
+
+func ConfigureBuild(cfg *BuildOptions) (*api.BuildOptions, error) {
+	opts := api.BuildOptions{
+		Color:   api.ColorAlways,
+		Outfile: "out.js",
+		Loader: map[string]api.Loader{
+			".js": api.LoaderJSX,
+		},
+		EntryPoints: []string{"sample-app/src/index.js"},
+		Write:       true,
+	}
+
+	if cfg.Entry != "" {
+		opts.EntryPoints = []string{cfg.Entry}
+	} else {
+		opts.EntryPoints = []string{"src/index.js"}
+	}
+
+	if cfg.Bundle != nil {
+		opts.Bundle = *cfg.Bundle
+	}
+	if cfg.Minify != nil {
+		opts.MinifyIdentifiers = *cfg.Minify
+		opts.MinifySyntax = *cfg.Minify
+		opts.MinifyWhitespace = *cfg.Minify
+	}
+
+	if len(cfg.Engines) > 0 {
+		opts.Engines = []api.Engine{}
+		for name, ver := range cfg.Engines {
+			engine, ok := BuildEngines[name]
+			if !ok {
+				return nil, fmt.Errorf("invalid engine name. Must be one of: %v", EngineNames)
+			}
+			opts.Engines = append(opts.Engines, api.Engine{
+				Name:    engine,
+				Version: ver,
+			})
+		}
+	}
+
+	if cfg.Format != "" {
+		format, ok := BuildFormats[cfg.Format]
+		if !ok {
+			return nil, fmt.Errorf("invalid build format. Must be one of: %v", FormatNames)
+		}
+		opts.Format = format
+	}
+
+	if cfg.SourceMap != "" {
+		format, ok := SourceMapTypes[cfg.SourceMap]
+		if !ok {
+			return nil, errors.New("invalid sourcemap type. Must be one of: [linked, inline]")
+		}
+		opts.Sourcemap = format
+	}
+
+	if cfg.Target != "" {
+		target, ok := BuildTargets[cfg.Target]
+		if !ok {
+			return nil, fmt.Errorf("invalid build target. Must be one of: %v", TargetNames)
+		}
+		opts.Target = target
+	}
+
+	return &opts, nil
+}

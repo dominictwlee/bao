@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"log"
 	"os"
 
 	"github.com/spf13/viper"
@@ -66,14 +67,16 @@ func initConfig() {
 		}
 
 		// Search config in working directory with name ".bao" (without extension).
-		viper.AddConfigPath(wd + "/exampleapp")
+		viper.AddConfigPath(wd)
 		viper.SetConfigName(".bao")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+	//viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	} else {
+		log.Fatalln(err)
 	}
 }

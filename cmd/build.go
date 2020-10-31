@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/dominictwlee/bao/internal/config"
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"log"
 	"os"
 )
 
@@ -13,17 +16,16 @@ var buildCmd = &cobra.Command{
 	Short: "Build bundles package",
 	Long:  "Build bundles package according to your config file and properties in package.json",
 	Run: func(cmd *cobra.Command, args []string) {
-		result := api.Build(api.BuildOptions{
-			Color:   api.ColorAlways,
-			Engines: nil,
-			Outfile: "out.js",
-			Loader: map[string]api.Loader{
-				".js": api.LoaderJSX,
-			},
-			EntryPoints: []string{"sample-app/src/index.js"},
-			Write:       true,
-		})
+		var cfg config.BuildOptions
+		if err := viper.Unmarshal(&cfg); err != nil {
+			log.Fatalln(err)
+		}
 
+		buildOpts, err := config.ConfigureBuild(&cfg)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		result := api.Build(*buildOpts)
 		if len(result.Errors) > 0 {
 			fmt.Println(result.Errors)
 			os.Exit(1)
