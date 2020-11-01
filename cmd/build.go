@@ -3,11 +3,11 @@ package cmd
 import (
 	"fmt"
 	"github.com/dominictwlee/bao/internal/config"
+	"github.com/dominictwlee/bao/internal/pkgjson"
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
-	"os"
 )
 
 var buildCmd = &cobra.Command{
@@ -21,14 +21,31 @@ var buildCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		buildOpts, err := config.ConfigureBuild(&cfg)
+		pkgJson, err := pkgjson.Read()
 		if err != nil {
 			log.Fatalln(err)
 		}
-		result := api.Build(*buildOpts)
-		if len(result.Errors) > 0 {
-			fmt.Println(result.Errors)
-			os.Exit(1)
+		buildOpts, err := config.ConfigureBuild(&cfg, &pkgJson)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		var esmOpts *api.BuildOptions
+		if pkgJson.Module != "" {
+			esmOpts, err = config.ConfigureESMBuild(buildOpts, &pkgJson)
+		}
+
+		allBuildOpts := []*api.BuildOptions{buildOpts, esmOpts}
+		for _, opts := range allBuildOpts {
+			if opts == nil {
+				continue
+			}
+			result := api.Build(*opts)
+			if len(result.Errors) > 0 {
+				for _, err := range result.Errors {
+					fmt.Println(err)
+				}
+			}
 		}
 	},
 }

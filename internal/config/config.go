@@ -1,12 +1,11 @@
 package config
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/dominictwlee/bao/internal/pkgjson"
 	"github.com/evanw/esbuild/pkg/api"
-	"io/ioutil"
+	"github.com/jinzhu/copier"
 )
 
 var (
@@ -89,10 +88,11 @@ type BuildOptions struct {
 	SourceMap string
 }
 
-func ConfigureBuild(cfg *BuildOptions) (*api.BuildOptions, error) {
+func ConfigureBuild(cfg *BuildOptions, pkgJson *pkgjson.PackageJSON) (*api.BuildOptions, error) {
 	opts := api.BuildOptions{
-		Color: api.ColorAlways,
-		Write: true,
+		Color:  api.ColorAlways,
+		Write:  true,
+		Bundle: true,
 	}
 
 	if cfg.Entry != "" {
@@ -101,10 +101,6 @@ func ConfigureBuild(cfg *BuildOptions) (*api.BuildOptions, error) {
 		opts.EntryPoints = []string{"src/index.js"}
 	}
 
-	pkgJson, err := readPkgJSON()
-	if err != nil {
-		return nil, err
-	}
 	if pkgJson.Main == "" {
 		return nil, errors.New("main field must be specified in package.json. it is used for your build output")
 	}
@@ -160,14 +156,13 @@ func ConfigureBuild(cfg *BuildOptions) (*api.BuildOptions, error) {
 	return &opts, nil
 }
 
-func readPkgJSON() (pkgjson.PackageJSON, error) {
-	var pkgJson pkgjson.PackageJSON
-	pkgJsonData, err := ioutil.ReadFile("package.json")
-	if err != nil {
-		return pkgJson, err
+func ConfigureESMBuild(baseOpts *api.BuildOptions, pkgJson *pkgjson.PackageJSON) (*api.BuildOptions, error) {
+	var esmOpts api.BuildOptions
+	if err := copier.Copy(&esmOpts, &baseOpts); err != nil {
+		return nil, fmt.Errorf("failed to config esm build: %v\n", err)
 	}
-	if err := json.Unmarshal(pkgJsonData, &pkgJson); err != nil {
-		return pkgJson, err
-	}
-	return pkgJson, nil
+	esmOpts.Format = api.FormatESModule
+	esmOpts.Outfile = pkgJson.Module
+
+	return &esmOpts, nil
 }

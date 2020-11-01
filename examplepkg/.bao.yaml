@@ -6,7 +6,6 @@ bundle: true
 #external:
 #  - fsevents
 #  - react
-#format: esm # esm, iife, cjs
 #minify: true
 sourcemap: linked # inline, linked
 

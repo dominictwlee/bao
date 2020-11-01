@@ -1,7 +1,9 @@
 package pkgjson
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/url"
 	"os/exec"
 	"regexp"
@@ -171,4 +173,16 @@ func IsValidName(name string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func Read() (PackageJSON, error) {
+	var pkgJson PackageJSON
+	pkgJsonData, err := ioutil.ReadFile("package.json")
+	if err != nil {
+		return pkgJson, err
+	}
+	if err := json.Unmarshal(pkgJsonData, &pkgJson); err != nil {
+		return pkgJson, err
+	}
+	return pkgJson, nil
 }
