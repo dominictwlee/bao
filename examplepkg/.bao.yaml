@@ -1,9 +1,6 @@
 entry: src/index.js
 target: es2020
-engines:
-  firefox: "48"
-  chrome: "50"
-#bundle: true
+bundle: true
 #define:
 #  __SPECIAL__: false
 #external:

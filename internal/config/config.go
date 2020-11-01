@@ -91,11 +91,10 @@ type BuildOptions struct {
 
 func ConfigureBuild(cfg *BuildOptions) (*api.BuildOptions, error) {
 	opts := api.BuildOptions{
-		Color:   api.ColorAlways,
-		Outfile: "out.js",
-		Loader: map[string]api.Loader{
-			".js": api.LoaderJSX,
-		},
+		Color: api.ColorAlways,
+		//Loader: map[string]api.Loader{
+		//	".js": api.LoaderJSX,
+		//},
 		Write: true,
 	}
 
