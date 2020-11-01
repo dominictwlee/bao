@@ -1,5 +1,6 @@
 {
   "author": "Dommy Montana",
   "name": "examplepkg",
-  "main": "dist/index.js"
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js"
 }

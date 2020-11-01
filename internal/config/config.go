@@ -1,9 +1,12 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/dominictwlee/bao/internal/pkgjson"
 	"github.com/evanw/esbuild/pkg/api"
+	"io/ioutil"
 )
 
 var (
@@ -93,8 +96,7 @@ func ConfigureBuild(cfg *BuildOptions) (*api.BuildOptions, error) {
 		Loader: map[string]api.Loader{
 			".js": api.LoaderJSX,
 		},
-		EntryPoints: []string{"sample-app/src/index.js"},
-		Write:       true,
+		Write: true,
 	}
 
 	if cfg.Entry != "" {
@@ -102,6 +104,15 @@ func ConfigureBuild(cfg *BuildOptions) (*api.BuildOptions, error) {
 	} else {
 		opts.EntryPoints = []string{"src/index.js"}
 	}
+
+	pkgJson, err := readPkgJSON()
+	if err != nil {
+		return nil, err
+	}
+	if pkgJson.Main == "" {
+		return nil, errors.New("main field must be specified in package.json. it is used for your build output")
+	}
+	opts.Outfile = pkgJson.Main
 
 	if cfg.Bundle != nil {
 		opts.Bundle = *cfg.Bundle
@@ -151,4 +162,16 @@ func ConfigureBuild(cfg *BuildOptions) (*api.BuildOptions, error) {
 	}
 
 	return &opts, nil
+}
+
+func readPkgJSON() (pkgjson.PackageJSON, error) {
+	var pkgJson pkgjson.PackageJSON
+	pkgJsonData, err := ioutil.ReadFile("package.json")
+	if err != nil {
+		return pkgJson, err
+	}
+	if err := json.Unmarshal(pkgJsonData, &pkgJson); err != nil {
+		return pkgJson, err
+	}
+	return pkgJson, nil
 }
