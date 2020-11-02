@@ -1,5 +1,6 @@
 entry: src/index.js
-target: es2020
+engines:
+  node: "10"
 bundle: true
 #define:
 #  __SPECIAL__: false

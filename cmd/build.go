@@ -32,7 +32,8 @@ var buildCmd = &cobra.Command{
 		}
 
 		var esmOpts *api.BuildOptions
-		if pkgJson.Module != "" {
+		_, isNode := cfg.Engines["node"]
+		if pkgJson.Module != "" && !isNode {
 			esmOpts, err = config.ConfigureESMBuild(buildOpts, &pkgJson)
 		}
 
