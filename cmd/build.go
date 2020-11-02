@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
+	"os"
 )
 
 var buildCmd = &cobra.Command{
@@ -45,6 +46,7 @@ var buildCmd = &cobra.Command{
 				for _, err := range result.Errors {
 					fmt.Println(err)
 				}
+				os.Exit(1)
 			}
 		}
 	},
