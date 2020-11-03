@@ -159,7 +159,7 @@ func ConfigureBuild(cfg *BuildOptions, pkgJson *pkgjson.PackageJSON) (*api.Build
 func ConfigureESMBuild(baseOpts *api.BuildOptions, pkgJson *pkgjson.PackageJSON) (*api.BuildOptions, error) {
 	var esmOpts api.BuildOptions
 	if err := copier.Copy(&esmOpts, &baseOpts); err != nil {
-		return nil, fmt.Errorf("failed to config esm build: %v\n", err)
+		return nil, fmt.Errorf("failed to configs esm build: %v\n", err)
 	}
 	esmOpts.Format = api.FormatESModule
 	esmOpts.Outfile = pkgJson.Module

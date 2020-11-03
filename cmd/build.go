@@ -15,7 +15,7 @@ var buildCmd = &cobra.Command{
 	Use:   "build",
 	Args:  cobra.MaximumNArgs(1),
 	Short: "Build bundles package",
-	Long:  "Build bundles package according to your config file and properties in package.json",
+	Long:  "Build bundles package according to your configs file and properties in package.json",
 	Run: func(cmd *cobra.Command, args []string) {
 		var cfg config.BuildOptions
 		if err := viper.Unmarshal(&cfg); err != nil {
