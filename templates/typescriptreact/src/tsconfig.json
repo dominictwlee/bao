@@ -4,6 +4,7 @@
     "lib": ["dom", "esnext"],
     "target": "esnext",
     "module": "esnext",
+    "jsx": "preserve",
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
