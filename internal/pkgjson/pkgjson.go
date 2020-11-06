@@ -16,10 +16,18 @@ const (
 )
 
 var (
-	scopedPkgRe = regexp.MustCompile("^(?:@([^/]+?)[/])?([^/]+?)$")
-	BaseDeps    = []string{"react"}
-	BaseDevDeps = []string{"eslint, prettier"}
-	builtins    = [...]string{
+	scopedPkgRe    = regexp.MustCompile("^(?:@([^/]+?)[/])?([^/]+?)$")
+	TSDevDeps      = []string{"typescript"}
+	TSReactDevDeps = []string{"@types/react", "@types/react-dom"}
+	ReactDevDeps   = []string{"react", "react-dom"}
+	BaseDevDeps    = []string{"eslint, prettier"}
+	DevDepsByTmpl  = map[string][]string{
+		"javascript":      BaseDevDeps,
+		"typescript":      concatSlices(BaseDevDeps, TSDevDeps),
+		"react":           concatSlices(BaseDevDeps, TSDevDeps, ReactDevDeps),
+		"typescriptreact": concatSlices(BaseDevDeps, TSDevDeps, ReactDevDeps, TSReactDevDeps),
+	}
+	builtins = [...]string{
 		"assert",
 		"buffer",
 		"child_process",
@@ -185,4 +193,12 @@ func Read() (PackageJSON, error) {
 		return pkgJson, err
 	}
 	return pkgJson, nil
+}
+
+func concatSlices(slices ...[]string) []string {
+	var allSlices []string
+	for _, s := range slices {
+		allSlices = append(allSlices, s...)
+	}
+	return allSlices
 }

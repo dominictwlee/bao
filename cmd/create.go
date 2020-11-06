@@ -60,42 +60,46 @@ var createCmd = &cobra.Command{
 		}
 
 		var templatePath string
+		var deps []string
 
 		if tmpl != "" {
 			if !isValidTmpl(tmpl) {
 				log.Fatalf("%s is not a valid template. Please choose from the following: %v\n", tmpl, allowedTmpls)
 			}
+			fmt.Printf("Bootstrapping %s project", tmpl)
 			templatePath = filepath.Join(modulePath, "templates", strings.TrimSpace(tmpl))
+			d, ok := pkgjson.DevDepsByTmpl[tmpl]
+			if !ok {
+				log.Fatalf("failed to find dependencies for %s\n", tmpl)
+			}
+			deps = d
 		} else {
-			// bootstrap basic project folder0664
-			fmt.Println("Basic")
+			fmt.Println("Bootstrapping basic project")
 			templatePath = filepath.Join(modulePath, "templates", "basic")
+		}
 
-			// Copy template files
-			if err := fs.CopyDir(templatePath, projectPath); err != nil {
-				log.Fatalln(err)
-			}
+		// Copy template files
+		if err := fs.CopyDir(templatePath, projectPath); err != nil {
+			log.Fatalln(err)
+		}
 
-			// write pkg json
-			pjson := pkgjson.New(pkgjson.NamePkg(projectName, "Dommy Montana"))
-			json, err := json.Marshal(pjson)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			if err := ioutil.WriteFile(filepath.Join(projectPath, "package.json"), json, 0664); err != nil {
-				log.Fatalln(err)
-			}
+		// write pkg json
+		pjson := pkgjson.New(pkgjson.NamePkg(projectName, ""))
+		json, err := json.Marshal(pjson)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		if err := ioutil.WriteFile(filepath.Join(projectPath, "package.json"), json, 0664); err != nil {
+			log.Fatalln(err)
+		}
 
-			// yarn/npm install dependencies
-			if err := os.Chdir(projectPath); err != nil {
-				log.Fatalln(err)
-			}
-			if err := pkgjson.InstallDeps(pkgjson.BaseDeps); err != nil {
-				log.Fatalln(err)
-			}
-			if err := pkgjson.InstallDeps(pkgjson.BaseDevDeps, pkgjson.DevDepFlag); err != nil {
-				log.Fatalln(err)
-			}
+		// yarn/npm install dependencies
+		if err := os.Chdir(projectPath); err != nil {
+			log.Fatalln(err)
+		}
+
+		if err := pkgjson.InstallDeps(deps, pkgjson.DevDepFlag); err != nil {
+			log.Fatalln(err)
 		}
 	},
 }
