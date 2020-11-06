@@ -1,4 +1,4 @@
-entry: src/index.js
+entry: src/index.tsx
 engines:
   node: "10"
 bundle: true
