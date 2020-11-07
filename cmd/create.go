@@ -85,7 +85,7 @@ var createCmd = &cobra.Command{
 
 		// write pkg json
 		pjson := pkgjson.New(pkgjson.NamePkg(projectName, ""))
-		json, err := json.Marshal(pjson)
+		json, err := json.MarshalIndent(pjson, "", "\t")
 		if err != nil {
 			log.Fatalln(err)
 		}
