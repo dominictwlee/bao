@@ -3,6 +3,7 @@ package pkgjson
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os/exec"
@@ -20,9 +21,9 @@ var (
 	TSDevDeps      = []string{"typescript"}
 	TSReactDevDeps = []string{"@types/react", "@types/react-dom"}
 	ReactDevDeps   = []string{"react", "react-dom"}
-	BaseDevDeps    = []string{"eslint, prettier"}
+	BaseDevDeps    = []string{"eslint", "prettier"}
 	DevDepsByTmpl  = map[string][]string{
-		"javascript":      BaseDevDeps,
+		"basic":           BaseDevDeps,
 		"typescript":      concatSlices(BaseDevDeps, TSDevDeps),
 		"react":           concatSlices(BaseDevDeps, TSDevDeps, ReactDevDeps),
 		"typescriptreact": concatSlices(BaseDevDeps, TSDevDeps, ReactDevDeps, TSReactDevDeps),
@@ -130,6 +131,8 @@ func NamePkg(name string, author string) Option {
 func InstallDeps(deps []string, opt ...string) error {
 	//var out bytes.Buffer
 	//var stderr bytes.Buffer
+
+	fmt.Println(deps)
 
 	addCmd := []string{"add"}
 	addCmd = append(addCmd, deps...)

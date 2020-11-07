@@ -76,6 +76,11 @@ var createCmd = &cobra.Command{
 		} else {
 			fmt.Println("Bootstrapping basic project")
 			templatePath = filepath.Join(modulePath, "templates", "basic")
+			d, ok := pkgjson.DevDepsByTmpl["basic"]
+			if !ok {
+				log.Fatalf("failed to find dependencies for %s\n", tmpl)
+			}
+			deps = d
 		}
 
 		// Copy template files
