@@ -18,10 +18,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"log"
 	"os"
-
-	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -41,42 +38,5 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-}
-
-func init() {
-	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "configs", "", "configs file (default is ${ProjectRootDir}/.bao.yaml)")
-}
-
-// initConfig reads in configs file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use configs file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find working directory.
-		wd, err := os.Getwd()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Search configs in working directory with name ".bao" (without extension).
-		viper.AddConfigPath(wd)
-		viper.SetConfigName(".bao")
-	}
-
-	//viper.AutomaticEnv() // read in environment variables that match
-
-	// If a configs file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using configs file:", viper.ConfigFileUsed())
-	} else {
-		log.Fatalln(err)
 	}
 }
