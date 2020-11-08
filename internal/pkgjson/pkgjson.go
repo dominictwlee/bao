@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -129,9 +130,6 @@ func NamePkg(name string, author string) Option {
 }
 
 func InstallDeps(deps []string, opt ...string) error {
-	//var out bytes.Buffer
-	//var stderr bytes.Buffer
-
 	fmt.Println(deps)
 
 	addCmd := []string{"add"}
@@ -140,8 +138,11 @@ func InstallDeps(deps []string, opt ...string) error {
 	if len(opt) > 0 {
 		addCmd = append(addCmd, opt[0])
 	}
+	cmd := exec.Command("yarn", addCmd...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	return exec.Command("yarn", addCmd...).Run()
+	return cmd.Run()
 }
 
 func IsValidName(name string) (bool, error) {
