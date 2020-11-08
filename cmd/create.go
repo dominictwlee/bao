@@ -59,28 +59,15 @@ var createCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		var templatePath string
-		var deps []string
+		if !isValidTmpl(tmpl) {
+			log.Fatalf("%s is not a valid template. Please choose from the following: %v\n", tmpl, allowedTmpls)
+		}
+		fmt.Printf("Bootstrapping %s project", tmpl)
 
-		if tmpl != "" {
-			if !isValidTmpl(tmpl) {
-				log.Fatalf("%s is not a valid template. Please choose from the following: %v\n", tmpl, allowedTmpls)
-			}
-			fmt.Printf("Bootstrapping %s project", tmpl)
-			templatePath = filepath.Join(modulePath, "templates", strings.TrimSpace(tmpl))
-			d, ok := pkgjson.DevDepsByTmpl[tmpl]
-			if !ok {
-				log.Fatalf("failed to find dependencies for %s\n", tmpl)
-			}
-			deps = d
-		} else {
-			fmt.Println("Bootstrapping basic project")
-			templatePath = filepath.Join(modulePath, "templates", "basic")
-			d, ok := pkgjson.DevDepsByTmpl["basic"]
-			if !ok {
-				log.Fatalf("failed to find dependencies for %s\n", tmpl)
-			}
-			deps = d
+		templatePath := filepath.Join(modulePath, "templates", strings.TrimSpace(tmpl))
+		deps, ok := pkgjson.DevDepsByTmpl[tmpl]
+		if !ok {
+			log.Fatalf("failed to find dependencies for %s\n", tmpl)
 		}
 
 		// Copy template files
@@ -112,7 +99,7 @@ var createCmd = &cobra.Command{
 func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	createCmd.Flags().StringVarP(&tmpl, "template", "t", "", "Specify a template: [basic, typescript, react, typescriptreact]. Defaults to basic")
+	createCmd.Flags().StringVarP(&tmpl, "template", "t", "basic", "Specify a template: [basic, typescript, react, typescriptreact]. Defaults to basic")
 	rootCmd.AddCommand(createCmd)
 }
 
