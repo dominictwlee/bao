@@ -3,7 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/briandowns/spinner"
 	"github.com/dominictwlee/bao/internal/fs"
+	"github.com/dominictwlee/bao/internal/logger"
 	"github.com/dominictwlee/bao/internal/path"
 	"github.com/dominictwlee/bao/internal/pkgjson"
 	"github.com/spf13/cobra"
@@ -12,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var (
@@ -43,26 +46,32 @@ var createCmd = &cobra.Command{
 		5. run build
 		*/
 		projectName := args[0]
+		s := spinner.New(spinner.CharSets[41], 100*time.Millisecond) // Build our new spinner
+		s.Color("fgCyan")
+		s.Suffix = ": Creating project files"
+		s.FinalMSG = fmt.Sprintf("Created %v\n", projectName)
+		s.Start()
+		time.Sleep(time.Second * 3)
+
 		err := os.Mkdir(projectName, 0775)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Error("Failed to create project directory: %v", err)
 		}
 
 		projectPath, err := filepath.Abs(projectName)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Error("Could not find project directory path: %v", err)
 		}
-		fmt.Println(projectPath)
 
 		modulePath, err := path.ResolveModulePath()
 		if err != nil {
+			logger.Error("Could not find project directory path: %v", err)
 			log.Fatalln(err)
 		}
 
 		if !isValidTmpl(tmpl) {
 			log.Fatalf("%s is not a valid template. Please choose from the following: %v\n", tmpl, allowedTmpls)
 		}
-		fmt.Printf("Bootstrapping %s project", tmpl)
 
 		templatePath := filepath.Join(modulePath, "templates", strings.TrimSpace(tmpl))
 		deps, ok := pkgjson.DevDepsByTmpl[tmpl]
@@ -84,6 +93,8 @@ var createCmd = &cobra.Command{
 		if err := ioutil.WriteFile(filepath.Join(projectPath, "package.json"), json, 0664); err != nil {
 			log.Fatalln(err)
 		}
+
+		s.Stop()
 
 		// yarn/npm install dependencies
 		if err := os.Chdir(projectPath); err != nil {
