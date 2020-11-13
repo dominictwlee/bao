@@ -3,7 +3,6 @@ package pkgjson
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -130,8 +129,6 @@ func NamePkg(name string, author string) Option {
 }
 
 func InstallDeps(deps []string, opt ...string) error {
-	fmt.Println(deps)
-
 	addCmd := []string{"add"}
 	addCmd = append(addCmd, deps...)
 

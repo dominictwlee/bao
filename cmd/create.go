@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/briandowns/spinner"
 	"github.com/dominictwlee/bao/internal/fs"
 	"github.com/dominictwlee/bao/internal/logger"
 	"github.com/dominictwlee/bao/internal/path"
@@ -14,7 +13,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 var (
@@ -46,12 +44,11 @@ var createCmd = &cobra.Command{
 		5. run build
 		*/
 		projectName := args[0]
-		s := spinner.New(spinner.CharSets[41], 100*time.Millisecond) // Build our new spinner
-		s.Color("fgCyan")
-		s.Suffix = ": Creating project files"
-		s.FinalMSG = fmt.Sprintf("Created %v\n", projectName)
-		s.Start()
-		time.Sleep(time.Second * 3)
+		spin := logger.NewSpinner(logger.SpinnerOptions{
+			Suffix:   logger.Title.Sprintf(" Creating project files"),
+			FinalMSG: logger.Title.Sprintf("Created %v\n", projectName),
+		})
+		spin.Start()
 
 		err := os.Mkdir(projectName, 0775)
 		if err != nil {
@@ -94,7 +91,9 @@ var createCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		s.Stop()
+		spin.Stop()
+		fmt.Println("")
+		logger.Info("Installing Dependencies")
 
 		// yarn/npm install dependencies
 		if err := os.Chdir(projectPath); err != nil {
@@ -104,6 +103,8 @@ var createCmd = &cobra.Command{
 		if err := pkgjson.InstallDeps(deps, pkgjson.DevDepFlag); err != nil {
 			log.Fatalln(err)
 		}
+
+		logger.PrintProjInstructions(projectName, projectPath)
 	},
 }
 
